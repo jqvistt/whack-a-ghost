@@ -14,7 +14,7 @@ let gameTimerInterval;
 
 const maximumGhostsVisible = 3;
 
-const backgroundMusic = new Audio('../media/background_music.mp3');
+const backgroundMusic = new Audio('./media/background_music.mp3');
 backgroundMusic.loop = true;
 
 let musicVolume = 0.5; 
@@ -115,7 +115,7 @@ function startBackgroundMusic() {
 }
 
 function playClickSound() {
-    const clickAudio = new Audio('../media/click.wav');
+    const clickAudio = new Audio('./media/click.wav');
     clickAudio.volume = sfxVolume;
     activeSFX.add(clickAudio);
     
@@ -129,7 +129,7 @@ function playClickSound() {
 }
 
 function playBonkSound() {
-    const bonkAudio = new Audio('../media/bonk.wav');
+    const bonkAudio = new Audio('./media/bonk.wav');
     bonkAudio.volume = sfxVolume;
     activeSFX.add(bonkAudio);
     
@@ -143,7 +143,7 @@ function playBonkSound() {
 }
 
 function playCountDownSound(){
-    const countDownAudio = new Audio("../media/countdown_counting.wav");
+    const countDownAudio = new Audio("./media/countdown_counting.wav");
     countDownAudio.volume = sfxVolume;
     activeSFX.add(countDownAudio);
 
@@ -157,7 +157,7 @@ function playCountDownSound(){
 }
 
 function playCountDownFinishedSound(){
-    const countDownAudio = new Audio("../media/countdown_finished.wav");
+    const countDownAudio = new Audio("./media/countdown_finished.wav");
     countDownAudio.volume = sfxVolume;
     activeSFX.add(countDownAudio);
 
@@ -171,7 +171,7 @@ function playCountDownFinishedSound(){
 }
 
 function playBeepSound(){
-    const beepAudio = new Audio("../media/beep.mp3");
+    const beepAudio = new Audio("./media/beep.mp3");
     beepAudio.volume = sfxVolume;
     activeSFX.add(beepAudio);
 
@@ -185,7 +185,7 @@ function playBeepSound(){
 }
 
 function playGameOverSound(){
-    const gameOverSound = new Audio("../media/gameOver.mp3");
+    const gameOverSound = new Audio("./media/gameOver.mp3");
     gameOverSound.volume = sfxVolume;
     activeSFX.add(gameOverSound);
 
@@ -242,7 +242,7 @@ function selectDifficulty(difficultyLevel) {
 }
 
 function startCountDown(seconds) {
-    let countingFinishedSound = new Audio('../media/countdown_finished.wav');
+    let countingFinishedSound = new Audio('./media/countdown_finished.wav');
     let countDownElement = document.createElement("div");
     countDownElement.id = "countdown-timer";
     gameBoard.appendChild(countDownElement);
@@ -435,7 +435,7 @@ class Ghost {
                     this.isVisible = true;
                     console.log("Ghost appeared. Total visible:", ghostsVisible);
 
-                    this.ghostElement.style.backgroundImage = "url('../media/ghost_appear.png')";
+                    this.ghostElement.style.backgroundImage = "url('./media/ghost_appear.png')";
                     this.ghostElement.style.display = "block";
                     this.ghostElement.style.pointerEvents = "all";
                     this.ghostWrapper.classList.add("floatUp");
@@ -449,7 +449,7 @@ class Ghost {
                 break;
                 
             case "idle":
-                this.ghostElement.style.backgroundImage = "url('../media/ghost_idle.gif')";
+                this.ghostElement.style.backgroundImage = "url('./media/ghost_idle.gif')";
                 this.ghostElement.style.backgroundSize = "cover";
                 if (!isGameOver) {
                     this.disappearRandomlyAfterMaxSeconds(5);
@@ -458,7 +458,7 @@ class Ghost {
                 
             case "hit":
                 playBonkSound();
-                this.ghostElement.style.backgroundImage = "url('../media/ghost_hit.png')";
+                this.ghostElement.style.backgroundImage = "url('./media/ghost_hit.png')";
                 this.ghostElement.style.pointerEvents = "none";
                 void this.ghostWrapper.offsetWidth;
                 this.ghostWrapper.classList.add("shake-horizontal");
