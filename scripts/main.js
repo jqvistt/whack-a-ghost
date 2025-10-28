@@ -10,16 +10,15 @@ let score = 0;
 let ghostsVisible = 0;
 
 let isGameOver = false;
-let gameTimerInterval; // Store timer interval reference
+let gameTimerInterval; 
 
 const maximumGhostsVisible = 3;
 
 const backgroundMusic = new Audio('../media/background_music.mp3');
 backgroundMusic.loop = true;
 
-// Volume settings
-let musicVolume = 0.5; // Default 50%
-let sfxVolume = 0.7;   // Default 70%
+let musicVolume = 0.5; 
+let sfxVolume = 0.7;   
 
 const activeSFX = new Set();
 
@@ -28,6 +27,18 @@ document.addEventListener('DOMContentLoaded', function() {
     difficultyPanel = document.getElementById('difficulty-panel');
     gameBoard = document.getElementById('game-board');
     holes = document.getElementsByClassName('hole');
+
+    document.addEventListener('mousemove', function(e) {
+    const cursor = document.getElementById('custom-cursor');
+    cursor.style.left = (e.clientX - 32) + 'px'; // Center the cursor
+    cursor.style.top = (e.clientY - 32) + 'px';
+});
+
+
+
+
+
+
 
     console.log(holes);
 
@@ -131,6 +142,62 @@ function playBonkSound() {
     });
 }
 
+function playCountDownSound(){
+    const countDownAudio = new Audio("../media/countdown_counting.wav");
+    countDownAudio.volume = sfxVolume;
+    activeSFX.add(countDownAudio);
+
+    countDownAudio.play().then(() => {
+        countDownAudio.addEventListener('ended', () => {
+            activeSFX.delete(countDownAudio);
+        });
+    }).catch(error => {
+        activeSFX.delete(countDownAudio);
+    });
+}
+
+function playCountDownFinishedSound(){
+    const countDownAudio = new Audio("../media/countdown_finished.wav");
+    countDownAudio.volume = sfxVolume;
+    activeSFX.add(countDownAudio);
+
+    countDownAudio.play().then(() => {
+        countDownAudio.addEventListener('ended', () => {
+            activeSFX.delete(countDownAudio);
+        });
+    }).catch(error => {
+        activeSFX.delete(countDownAudio);
+    });
+}
+
+function playBeepSound(){
+    const beepAudio = new Audio("../media/beep.mp3");
+    beepAudio.volume = sfxVolume;
+    activeSFX.add(beepAudio);
+
+    beepAudio.play().then(() => {
+        beepAudio.addEventListener('ended', () => {
+            activeSFX.delete(beepAudio);
+        });
+    }).catch(error => {
+        activeSFX.delete(beepAudio);
+    });
+}
+
+function playGameOverSound(){
+    const gameOverSound = new Audio("../media/gameOver.mp3");
+    gameOverSound.volume = sfxVolume;
+    activeSFX.add(gameOverSound);
+
+    gameOverSound.play().then(() => {
+        gameOverSound.addEventListener('ended', () => {
+            activeSFX.delete(gameOverSound);
+        });
+    }).catch(error => {
+        activeSFX.delete(gameOverSound);
+    });
+}
+
 function initButtons() {
     const buttons = document.getElementsByClassName('button');
 
@@ -175,7 +242,6 @@ function selectDifficulty(difficultyLevel) {
 }
 
 function startCountDown(seconds) {
-    let countingSound = new Audio('../media/countdown_counting.wav');
     let countingFinishedSound = new Audio('../media/countdown_finished.wav');
     let countDownElement = document.createElement("div");
     countDownElement.id = "countdown-timer";
@@ -186,12 +252,12 @@ function startCountDown(seconds) {
         const interval = setInterval(() => {
             if (counter > 0) {
                 countDownElement.textContent = counter;
-                countingSound.play();
+                playCountDownSound();
                 counter--;
             } else {
                 clearInterval(interval);
                 countDownElement.textContent = "GO!";
-                countingFinishedSound.play();
+                playCountDownFinishedSound();
                 resolve();
                 setTimeout(() => {
                     countDownElement.style.display = 'none';
@@ -210,6 +276,9 @@ function startGameTimer(){
         gameTimerInterval = setInterval(() => {
             if (counter > 0 && !isGameOver) {
                 counter--;
+
+                if(counter <= 5) playBeepSound(); //plays the beep audio when time is running out
+
                 document.getElementById('time-label').textContent = `Time: ${counter}s`;
             } else {
                 clearInterval(gameTimerInterval);
@@ -231,6 +300,7 @@ function gameLoop(difficulty) {
     startCountDown(3).then(() => {
         startGameTimer().then(() => {
             endGame();
+            playGameOverSound();
         });
         spawnGhosts();
 
@@ -270,49 +340,40 @@ function endGame() {
     
     gameBoard.appendChild(gameOverElement);
     
-    // Add play again button functionality
     document.getElementById('play-again').addEventListener('click', function() {
         resetGame();
         playGame();
     });
     
-    // Hide play button until play again is clicked
     playButton.style.display = 'none';
 }
 
 function resetGame() {
-    // Clear any existing game over element
     const gameOverElement = document.getElementById('game-over');
     if (gameOverElement) {
         gameOverElement.remove();
     }
     
-    // Clear any existing countdown timer
     const countdownTimer = document.getElementById('countdown-timer');
     if (countdownTimer) {
         countdownTimer.remove();
     }
     
-    // Clear any existing ghosts completely
     const ghostWrappers = document.querySelectorAll('.ghost-wrapper');
     ghostWrappers.forEach(wrapper => wrapper.remove());
     
-    // Reset game state
     score = 0;
     ghostsVisible = 0;
     isGameOver = false;
-    difficulty = null; // CRITICAL: Reset difficulty so it asks again
+    difficulty = null; 
     
-    // Clear any existing timer
     if (gameTimerInterval) {
         clearInterval(gameTimerInterval);
     }
     
-    // Update displays
     document.getElementById('score-label').textContent = `Score: ${score}`;
     document.getElementById('time-label').textContent = `Time: ${gameDuration}s`;
     
-    // Show difficulty panel again for next game
     difficultyPanel.style.visibility = 'visible';
 }
 
@@ -337,7 +398,7 @@ class Ghost {
         this.ghostElement = document.createElement("div");
         this.ghostElement.className = "ghost";
 
-        this.ghostWrapper.addEventListener('click', () => {
+        this.ghostWrapper.addEventListener('mousedown', () => {
             if (!isGameOver && (this.state === "idle" || this.state === "appearing")) {
                 this.setState("hit");
                 document.dispatchEvent(hitEvent);
@@ -351,7 +412,6 @@ class Ghost {
     }
 
     updateState() {
-        // Don't update state if game is over
         if (isGameOver && this.state !== "hit") {
             return;
         }
@@ -430,7 +490,7 @@ class Ghost {
     }
 
     appearRandomly(maxDelaySeconds) {
-        // Don't schedule if game is over or already visible
+
         if (isGameOver || this.state !== "hidden") {
             return;
         }

@@ -40,7 +40,7 @@
 } 
 @keyframes floatUp {
     0% {
-        transform: translateY(10px);
+        transform: translateY(25px);
         opacity: 0;
     }
     100% {
@@ -55,7 +55,7 @@
         opacity: 1;
     }
     100% {
-        transform: translateY(10px);
+        transform: translateY(25px);
         opacity: 0;
     }
 }
@@ -91,11 +91,18 @@ html, body {
     margin: 0;
     padding: 0;
     background-color: var(--background-color);
+    background-image: 
+        linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), /* Dark overlay */
+        url('../media/background_image.png');
+    background-size: cover;
+    background-repeat: no-repeat;
     color: var(--text-color);
     font-family: 'Arial', sans-serif;
     width: 100%;
     height: 100%;
     box-shadow: inset 0 0 100px #000000;
+        cursor: none;
+
 }
 
 #volume-controls {
@@ -170,8 +177,8 @@ h1{
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
     gap: 2px;
-    width: 70vmin;
-    height: 70vmin;
+    width: 65vmin;
+    height: 65vmin;
 
     margin-top: 1vh;
 
@@ -187,7 +194,61 @@ h1{
     box-shadow: 0 0 15px var(--accent-color);
 
     animation: grow 1s 1s ease forwards;
+
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -o-crisp-edges;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+
+    overflow: visible;
+
+    cursor: none;
 }
+
+#custom-cursor {
+    position: fixed;
+    width: 64px; /* Make it larger */
+    height: 64px;
+    background-image: url('../media/shovel.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    pointer-events: none; /* So it doesn't interfere with clicking */
+    z-index: 9999;
+    transition: transform 0.1s ease;
+    transform-origin: center center;
+
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -o-crisp-edges;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+/* Active/clicking state */
+body:active #custom-cursor {
+    animation: shovelWhack 0.15s ease-out;
+}
+
+@keyframes shovelWhack {
+    0% {
+        transform: rotate(0) scale(1); 
+    }
+    30% {
+        transform: rotate(30deg) scale(1.2); 
+    }
+    60% {
+        transform: rotate(-75deg) scale(0.9); /* Overshoot extremity */
+    }
+    80% {
+        transform: rotate(-42deg) scale(0.92); /* Bounce back */
+    }
+    100% {
+        transform: rotate(-45deg) scale(0.9); /* Settle */
+    }
+}
+
+
 
 .flex-container {
     display: flex;
@@ -214,7 +275,6 @@ footer {
 .button {
     background-color: var(--primary-color);
     color: var(--text-color);
-    border: none;
 
     height: fit-content;
     width: fit-content;
@@ -223,7 +283,7 @@ footer {
 
     font-size: 1.2em;
     border-radius: 5px;
-    cursor: pointer;
+    /* cursor: pointer; */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     z-index: 10;
 }
@@ -246,14 +306,62 @@ footer {
 }
 
 .hole {
+
+
     display: none;
     width: 50%;
-    height: 50%;
+    height: 25%;
+    scale: 150%;
+
     background-image: url('../media/hole.png');
     background-size: cover;
     background-color: transparent;
     position: relative;
+    top: 25%;
+
     animation: grow 1s ease; 
+
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -o-crisp-edges;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+
+    z-index: 3;
+    overflow: visible;
+}
+
+.hole-front{
+
+    position: absolute;
+    width: 100%;
+    height:100%;
+    /* background-color: #F25912; */
+
+    background-image: url('../media/hole_front.png');
+    background-size: cover;
+    z-index: 10;
+    overflow: visible;
+
+}
+
+.gravestone{
+
+    position: absolute;
+    width: 16px;
+    height: 16px;
+
+    left: 42%;
+    bottom: 110%;
+
+    scale: 3;
+
+    background-image: url('../media/gravestone.png');
+    background-size: cover;
+
+
+    z-index: 0;
+
 }
 
 #difficulty-panel {
@@ -285,8 +393,12 @@ footer {
     transform: translate(-50%, -50%);
     font-size: 10vw;
     font-family: "Eater", serif;
-    color: var(--accent-color);
+    color: var(--primary-color);
+
     text-shadow: 2px 2px 4px #000000;
+
+    -webkit-text-stroke-width: 3px;
+    -webkit-text-stroke-color: var(--text-color);
     z-index: 20;
 }
 
@@ -294,14 +406,25 @@ footer {
     width: 100%;
     height: 100%;
     position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: visible;
 }
 
 .ghost {
-    transform: translateY(-25%);
-    width: 100%;
-    height: 100%;
-    background-size: cover;
+    transform: translateY(-40%);
+
+    position: relative;
+    width: 32px;
+    height: 32px;
+    scale: 3;
+    background-size: contain;
+    background: no-repeat;
     background-position: center;
+    z-index: 5;
+    overflow: visible;
+
     image-rendering: -webkit-optimize-contrast;
     image-rendering: -moz-crisp-edges;
     image-rendering: -o-crisp-edges;
@@ -311,5 +434,5 @@ footer {
 
 
 .ghost:hover {
-    cursor: pointer;
+    /* cursor: pointer; */
 }
