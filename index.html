@@ -8,11 +8,33 @@
         <link rel="stylesheet" href="style/stylesheet.css">
     </head>
     <body>
-        <audio autoplay loop>
+        <!-- <audio autoplay loop>
             <source src="media/background_music.mp3" type="audio/mpeg">
-        </audio>
+        </audio> -->
+
+        <div id="volume-controls">
+            <div class="volume-control">
+                <input type="range" id="music-volume" class="volume-slider"
+                    min="0" max="100" value="50">
+                <label class="volume-label">Music</label>
+            </div>
+            <div class="volume-control">
+                <input type="range" id="sfx-volume" class="volume-slider"
+                    min="0" max="100" value="70">
+                <label class="volume-label">SFX</label>
+            </div>
+        </div>
 
         <h1>Whac-a-Mole!</h1>
+
+        <div id="score-board">
+
+            <div id="score-label">Score: 0</div>
+            <div id="time-label">Time: 30s</div>
+            <div id="high-score-label">High-Score: 0</div>
+
+        </div>
+
         <div class="flex-container">
 
             <div id="play-button" class="button">&#9654;</div>
