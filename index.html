@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Whac-a-Mole!</title>
+        <link rel="icon" type="image" href="media/icon.png">
+        <link rel="stylesheet" href="style/stylesheet.css">
+    </head>
+    <body>
+        <audio autoplay loop>
+            <source src="media/background_music.mp3" type="audio/mpeg">
+        </audio>
+
+        <h1>Whac-a-Mole!</h1>
+        <div class="flex-container">
+
+            <div id="play-button" class="button">&#9654;</div>
+
+            <div id="difficulty-panel">
+                <h2>Please select a difficulty</h2>
+                <div class="button" data-difficulty="easy">Easy</div>
+                <div class="button" data-difficulty="medium">Medium</div>
+                <div class="button" data-difficulty="hard">Hard</div>
+            </div>
+
+            <div id="game-board">
+                <div class="hole"></div>
+                <div class="hole"></div>
+                <div class="hole"></div>
+                <div class="hole"></div>
+                <div class="hole"></div>
+                <div class="hole"></div>
+                <div class="hole"></div>
+                <div class="hole"></div>
+                <div class="hole"></div>
+            </div>
+
+        </div>
+
+        <footer>Made by Joakim Lönnqvist 2025 | Frontend-programmering
+            (2025-2026)</footer>
+
+        <script src="scripts/main.js"></script>
+    </body>
+</html>

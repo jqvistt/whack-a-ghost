@@ -1,0 +1,207 @@
+/* COLOUR PALETTE: https://colorhunt.co/palette/f259125c3e94412b6b211832 */
+
+@import url('https://fonts.googleapis.com/css2?family=Eater&family=Tiny5&display=swap');
+
+@keyframes slideIn {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes grow {
+    0% {
+        opacity: 0;
+        transform: scale(0);
+    }
+    70% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+    85% {
+        transform: scale(0.98); 
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.eater-regular {
+  font-family: "Eater", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+:root {
+    --primary-color: #F25912; /* Vibrant Orange */
+    --secondary-color: #5C3E94; /* Deep Purple */
+    --accent-color: #12B6B2; /* Teal Blue */
+    --background-color: #1B1832; /* Dark Navy */
+    --text-color: #FFFFFF; /* White */
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-family: 'Arial', sans-serif;
+}
+
+h1{
+
+    font-family: "Eater", serif;
+    font-size: 5vw;
+    text-align: center;
+    text-shadow: #000000 6px 2px 4px;
+    margin: 0;
+    animation: slideIn 1s ease-out forwards;
+
+}
+
+#game-board {
+    opacity: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 2px;
+    width: 70vmin;
+    height: 70vmin;
+
+    margin-top: 1vh;
+
+    align-items: center;
+    justify-items: center;
+
+    background-color: var(--secondary-color); /*Color in case the image doesnt load*/
+    background-image: url('../media/Cartoon_green_texture_grass.jpg');
+    background-size: 50% 50%;
+
+    border: 4px solid var(--primary-color);
+    border-radius: 10px;
+    box-shadow: 0 0 15px var(--accent-color);
+
+    animation: grow 1s 1s ease forwards;
+}
+
+.flex-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    margin: 0;
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+
+    margin-bottom: 10px;
+
+    font-size: 0.9em;
+    color: var(--text-color);
+}
+
+.button {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    border: none;
+
+    height: fit-content;
+    width: fit-content;
+
+    padding: 10px 20px;
+
+    font-size: 1.2em;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+}
+
+#play-button {
+    opacity: 0;
+    position: absolute;
+    border: none;
+    animation: grow 1s 1s ease forwards;
+}
+
+.button:hover {
+    background-color: var(--accent-color);
+}
+
+.button:active {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(2px);
+    scale: 0.98;
+}
+
+.hole {
+    display: none;
+    width: 50%;
+    height: 50%;
+    background-image: url('../media/hole.png');
+    background-size: cover;
+    background-color: transparent;
+    position: relative;
+    animation: grow 1s ease; 
+}
+
+#difficulty-panel {
+    visibility: hidden;
+
+    position: absolute;
+    text-align: center;
+    align-items: center;
+    z-index: 10;
+
+    padding: 20px;
+    border-radius: 5px;
+
+    background-color: var(--secondary-color);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+#difficulty-panel h2 {
+    margin: 0;
+    color: var(--text-color);
+}
+
+#countdown-timer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 10vw;
+    font-family: "Eater", serif;
+    color: var(--accent-color);
+    text-shadow: 2px 2px 4px #000000;
+    z-index: 20;
+}
+
+.ghost{
+
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    image-rendering: -webkit-optimize-contrast; /* Safari */
+    image-rendering: -moz-crisp-edges; /* Firefox */
+    image-rendering: -o-crisp-edges; /* Opera */
+    image-rendering: pixelated; /* Modern browsers */
+    image-rendering: crisp-edges; /* Fallback */
+
+}
+
+.ghost:hover {
+    cursor: pointer;
+}
