@@ -93,7 +93,7 @@ html, body {
     background-color: var(--background-color);
     background-image: 
         linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), /* Dark overlay */
-        url('./media/background_image.png');
+        url('../media/background_image.png');
     background-size: cover;
     background-repeat: no-repeat;
     color: var(--text-color);
@@ -101,7 +101,7 @@ html, body {
     width: 100%;
     height: 100%;
     box-shadow: inset 0 0 100px #000000;
-        cursor: none;
+    /* cursor: none;  */
 
 }
 
@@ -186,7 +186,7 @@ h1{
     justify-items: center;
 
     background-color: var(--secondary-color); /*Color in case the image doesnt load*/
-    background-image: url('./media/grassTexture.png');
+    background-image: url('../media/grassTexture.png');
     background-size: 10% 10%;
 
     border: 4px solid var(--primary-color);
@@ -202,21 +202,19 @@ h1{
     image-rendering: crisp-edges;
 
     overflow: visible;
-
-    cursor: none;
 }
 
 #custom-cursor {
     position: fixed;
-    width: 64px; /* Make it larger */
-    height: 64px;
-    background-image: url('./media/shovel.png');
+    width: 80px; /* Make it larger */
+    height: 80px;
+    background-image: url('../media/shovel.png');
     background-size: contain;
     background-repeat: no-repeat;
     pointer-events: none; /* So it doesn't interfere with clicking */
     z-index: 9999;
-    transition: transform 0.1s ease;
-    transform-origin: center center;
+    transform-origin: bottom right; /* Changed from center center to bottom right */
+
 
     image-rendering: -webkit-optimize-contrast;
     image-rendering: -moz-crisp-edges;
@@ -227,7 +225,11 @@ h1{
 
 /* Active/clicking state */
 body:active #custom-cursor {
-    animation: shovelWhack 0.15s ease-out;
+    animation: shovelWhack 0.15s ease-out forwards;
+}
+
+#custom-cursor {
+    animation-fill-mode: forwards; /* forces the animation to play to end even if active state (click) is lost */
 }
 
 @keyframes shovelWhack {
@@ -283,7 +285,6 @@ footer {
 
     font-size: 1.2em;
     border-radius: 5px;
-    /* cursor: pointer; */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     z-index: 10;
 }
@@ -313,7 +314,7 @@ footer {
     height: 25%;
     scale: 150%;
 
-    background-image: url('./media/hole.png');
+    background-image: url('../media/hole.png');
     background-size: cover;
     background-color: transparent;
     position: relative;
@@ -338,7 +339,7 @@ footer {
     height:100%;
     /* background-color: #F25912; */
 
-    background-image: url('./media/hole_front.png');
+    background-image: url('../media/hole_front.png');
     background-size: cover;
     z-index: 10;
     overflow: visible;
@@ -356,7 +357,7 @@ footer {
 
     scale: 3;
 
-    background-image: url('./media/gravestone.png');
+    background-image: url('../media/gravestone.png');
     background-size: cover;
 
 
@@ -430,9 +431,4 @@ footer {
     image-rendering: -o-crisp-edges;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-}
-
-
-.ghost:hover {
-    /* cursor: pointer; */
 }
