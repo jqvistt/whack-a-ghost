@@ -5,8 +5,14 @@ let holes;
 let gameBoard;
 let customCursor;
 
-const gameDuration = 60; // Game duration in seconds
+//SCOREBOARD ELEMENT REFERENCES
+let timeLabel;
+let highScoreLabel;
+
+
+const gameDuration = 60; // Game duration in seconds, updates in html automatically.
 let score = 0;
+let highScore = 0
 
 let ghostsVisible = 0;
 
@@ -31,6 +37,10 @@ document.addEventListener('DOMContentLoaded', function() {
     gameBoard = document.getElementById('game-board');
     holes = document.getElementsByClassName('hole');
 
+    timeLabel = document.querySelector('#time-label');
+    timeLabel.textContent = `Time: ${gameDuration}s`; /* set to match the variable gameDuration! */
+    highScoreLabel = document.querySelector('#high-score-label');
+
     customCursor = document.getElementById('custom-cursor');
     document.body.style.cursor = "auto"; // sets the cursor to auto when game is not running (when dom loaded)
     customCursor.style.visibility = "hidden";
@@ -43,10 +53,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 
-    
-
     console.log(holes);
 
+    initScoreBoard();
     initButtons();
     initVolumeControls();
 
@@ -54,7 +63,21 @@ document.addEventListener('DOMContentLoaded', function() {
         startBackgroundMusic();
         playGame();
     });
+
 });
+
+function initScoreBoard(){
+
+    initHighScore();
+    initGameTimer();
+
+}
+
+function initGameTimer(){
+
+}
+
+
 
 function initVolumeControls() {
     const musicSlider = document.getElementById('music-volume');
@@ -74,6 +97,7 @@ function initVolumeControls() {
         });
     }
 }
+
 
 function setMusicVolume(volume) {
     musicVolume = Math.max(0, Math.min(1, volume));
@@ -241,6 +265,54 @@ function initButtons() {
     });
 }
 
+function difficultyToInteger(difficulty){
+
+switch(difficulty){
+
+case("easy"):
+return 1;
+    break;
+
+case("medium"):
+return 2
+    break;
+
+case("hard"):
+return 3
+    break
+
+default:
+    return 2; //defauting this function to return 2 makes medium the default diff
+    break;
+
+}
+
+}
+
+function initHighScore(){
+
+    if(!localStorage.getItem("highScore")) return; //skip this if there isnt any high score in localStorage
+    
+    const localHighScore = localStorage.getItem("highScore");
+
+    console.log("localHighScore is: ", localHighScore)
+
+    highScore = localHighScore;
+    highScoreLabel.textContent = `High-Score: ${highScore}`;
+
+}
+
+function updateHighScore(newScore){
+
+    if(newScore < highScore) return; // skip this if new score is less than the current high score.
+
+    highScore = newScore;
+    highScoreLabel.textContent = `High-Score: ${highScore}`;
+    localStorage.setItem("highScore", highScore);
+
+}
+
+
 function playGame() {
     console.log('Play pressed');
 
@@ -326,6 +398,7 @@ function startGameTimer(){
 
 function gameLoop(difficulty) {
     console.log('Game started with difficulty:', difficulty);
+    console.log('That means the difficulty modifier is: ', difficultyToInteger(difficulty))
 
     
     isGameOver = false;
@@ -356,6 +429,8 @@ function gameLoop(difficulty) {
 function endGame() {
     console.log("Game Over! Final Score:", score);    
     isGameOver = true;
+
+    updateHighScore(score);
 
     document.body.style.cursor = "auto"; // sets the cursor to auto when game is not running (when dom loaded)
     customCursor.style.visibility = "hidden";
@@ -401,8 +476,7 @@ function resetGame() {
         countdownTimer.remove();
     }
     
-    const ghostWrappers = document.querySelectorAll('.ghost-wrapper');
-    ghostWrappers.forEach(wrapper => wrapper.remove());
+    cleanUpGhosts();
     
     score = 0;
     ghostsVisible = 0;
@@ -422,14 +496,14 @@ function resetGame() {
 function cleanUpGhosts(){
 
     activeGhosts.forEach(ghost => {
-        if(ghost.cleanup){
-            ghost.cleanup();
-        }
-    });
-    activeGhosts = []; //empty the array
+        console.log("active ghosts: ", activeGhosts);
+        ghost.destroy(); // destroy all active ghosts
+        console.log("active ghosts, post-destroy: ", activeGhosts);
 
-    const ghostWrappers = document.querySelectorAll('.ghost-wrapper');
-    ghostWrappers.forEach(wrapper => wrapper.remove()); // also remove all wrappers in DOM
+    });
+
+
+    activeGhosts = []; //empty the array
 
 }
 
@@ -451,7 +525,7 @@ class Ghost {
         this.hole = hole;
         this.state = "hidden";
         this.isVisible = false;
-        this.timeouts = []; //track timeouts for cleaning up
+        this.timeouts = []; //track timeouts for cleaning up after game
 
         this.ghostWrapper = document.createElement("div");
         this.ghostWrapper.className = "ghost-wrapper";
@@ -472,7 +546,7 @@ class Ghost {
         this.appearRandomly(3);
     }
 
-    cleanup() {
+    cleanup() { //cleans up and removes unused timeouts
         this.timeouts.forEach(timeout => clearTimeout(timeout));
         this.timeouts = [];
     }
@@ -589,7 +663,51 @@ class Ghost {
             if (!isGameOver && this.state === "idle") {
                 this.setState("disappearing");
             }
-        }, Math.random() * seconds * 1000);
+        }, (Math.random() * calculateDissapearDiff() * 1000));
         this.timeouts.push(timeout);
     }
+    
+    //AI GENERATED DESTROY!!
+    destroy() {
+        // 1. Clear all timeouts
+        this.cleanup();
+        
+        // 2. Remove event listeners
+        if (this.ghostWrapper) {
+            this.ghostWrapper.removeEventListener('mousedown', this.handleMouseDown);
+        }
+        
+        // 3. Remove DOM elements
+        if (this.ghostWrapper && this.ghostWrapper.parentNode) {
+            this.ghostWrapper.parentNode.removeChild(this.ghostWrapper);
+        }
+        
+        // 4. Update ghost count if this ghost was visible
+        if (this.isVisible) {
+            ghostsVisible--;
+            console.log("Ghost destroyed. Total visible:", ghostsVisible);
+        }
+        
+        // 5. Nullify references to help garbage collection
+        this.hole = null;
+        this.ghostWrapper = null;
+        this.ghostElement = null;
+        this.handleMouseDown = null;
+        
+        // 6. Set state to indicate destruction
+        this.state = "destroyed";
+    }
+}
+
+function calculateDissapearDiff(){
+
+    const disappearMaxTime = 5;
+    const diff = (disappearMaxTime - (1.5 * difficultyToInteger(difficulty))); /* multiplies the difftoint with 1.5 to make effect more extreme */
+
+    console.log('The current difficultotointeger is: ', difficultyToInteger(difficulty))
+    console.log('calculating the max disappear time to be: ', diff);
+
+    return diff;
+
+
 }
