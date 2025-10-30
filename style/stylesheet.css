@@ -85,6 +85,8 @@
     --accent-color: #12B6B2; /* Teal Blue */
     --background-color: #1B1832; /* Dark Navy */
     --text-color: #FFFFFF; /* White */
+
+    --debug-border: 1px solid red;
 }
 
 html, body {
@@ -177,6 +179,7 @@ h1{
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
     gap: 2px;
+    
     width: 65vmin;
     height: 65vmin;
 
@@ -307,63 +310,59 @@ footer {
 }
 
 .hole {
-
-
     display: none;
-    width: 50%;
-    height: 25%;
-    scale: 150%;
-
+    width: 32px;
+    height: 16px;
+    transform: scale(4);
     background-image: url('../media/hole.png');
-    background-size: cover;
+    background-size: contain;
     background-color: transparent;
     position: relative;
     top: 25%;
-
     animation: grow 1s ease; 
-
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: -o-crisp-edges;
     image-rendering: pixelated;
-    image-rendering: crisp-edges;
-
     z-index: 3;
     overflow: visible;
 }
 
-.hole-front{
 
+.hole-front {
     position: absolute;
-    width: 100%;
-    height:100%;
-    /* background-color: #F25912; */
 
+    width: 100%;
+    height: 100%;
+    
     background-image: url('../media/hole_front.png');
     background-size: cover;
     z-index: 10;
     overflow: visible;
-
+    image-rendering: pixelated;
 }
 
-.gravestone{
-
+.gravestone {
     position: absolute;
+    
+    /* Original sprite size */
     width: 16px;
     height: 16px;
+    
+    /* border: 0.5px solid red; */
 
-    left: 42%;
-    bottom: 110%;
+    /* MESSING WITH TRANSFORM SCALE HERE WILL END IN WRONG PIXEL SIZES */
+    
+    bottom: 85%;
+    left: 25%;
 
-    scale: 3;
-
+    margin: 0;
+    padding: 0;
+    
     background-image: url('../media/gravestone.png');
-    background-size: cover;
-
+    background-size: contain;
 
     z-index: 0;
-
+    image-rendering: pixelated;
 }
+
 
 #difficulty-panel {
     visibility: hidden;
@@ -403,6 +402,21 @@ footer {
     z-index: 20;
 }
 
+.ghost-canvas{
+    position: absolute;
+
+    bottom: 20%;
+    left: -2%;
+
+    width: 100%;
+    height: 200%;
+
+    /* border: var(--debug-border); */
+
+    overflow: hidden; /* Hides anything that is a child and outside this area */
+
+}
+
 .ghost-wrapper {
     width: 100%;
     height: 100%;
@@ -414,12 +428,12 @@ footer {
 }
 
 .ghost {
-    transform: translateY(-40%);
-
     position: relative;
     width: 32px;
-    height: 32px;
-    scale: 3;
+    height: 32px; 
+
+    pointer-events: none;
+    
     background-size: contain;
     background: no-repeat;
     background-position: center;

@@ -400,7 +400,6 @@ function gameLoop(difficulty) {
     console.log('Game started with difficulty:', difficulty);
     console.log('That means the difficulty modifier is: ', difficultyToInteger(difficulty))
 
-    
     isGameOver = false;
     score = 0;
     ghostsVisible = 0;
@@ -408,22 +407,28 @@ function gameLoop(difficulty) {
     
     startCountDown(3).then(() => {
         startGameTimer().then(() => {
+            //Happens when the game timer runs out (game over)
             endGame();
             playGameOverSound();
         });
+
         spawnGhosts();
 
-        if (!window.ghostHitHandler) {
-            window.ghostHitHandler = function() {
-                if (!isGameOver) {
-                    score++;
-                    document.getElementById('score-label').textContent = `Score: ${score}`;
-                    console.log("Score:", score);
-                }
-            };
-            document.addEventListener('ghostHit', window.ghostHitHandler);
-        }
+        document.addEventListener('ghostHit', handleGhostHit);
+
     });  
+}
+
+function handleGhostHit(){
+
+    if (!isGameOver) {
+
+        score++;
+        document.getElementById('score-label').textContent = `Score: ${score}`;
+        console.log("Score:", score);
+    
+    }
+    
 }
 
 function endGame() {
@@ -435,6 +440,8 @@ function endGame() {
     document.body.style.cursor = "auto"; // sets the cursor to auto when game is not running (when dom loaded)
     customCursor.style.visibility = "hidden";
     
+
+    //THIS ALL HAS TO GET REPLACED WITH ACTUAL HTML...
     const gameOverElement = document.createElement("div");
     gameOverElement.id = "game-over";
     gameOverElement.innerHTML = `
@@ -527,6 +534,11 @@ class Ghost {
         this.isVisible = false;
         this.timeouts = []; //track timeouts for cleaning up after game
 
+
+        //ghostCanvashides the ghost unless its inside the canvas area. This makes the ghost appear to go INTO the hole and not just through it.
+        this.ghostCanvas = document.createElement("div");
+        this.ghostCanvas.className = "ghost-canvas";
+
         this.ghostWrapper = document.createElement("div");
         this.ghostWrapper.className = "ghost-wrapper";
 
@@ -540,8 +552,9 @@ class Ghost {
             }
         });
 
+        this.ghostCanvas.appendChild(this.ghostWrapper);
         this.ghostWrapper.appendChild(this.ghostElement);
-        hole.appendChild(this.ghostWrapper);
+        hole.appendChild(this.ghostCanvas);
         
         this.appearRandomly(3);
     }
@@ -678,8 +691,8 @@ class Ghost {
         }
         
         // 3. Remove DOM elements
-        if (this.ghostWrapper && this.ghostWrapper.parentNode) {
-            this.ghostWrapper.parentNode.removeChild(this.ghostWrapper);
+        if (this.ghostCanvas && this.ghostCanvas.parentNode) {
+            this.ghostCanvas.parentNode.removeChild(this.ghostCanvas);
         }
         
         // 4. Update ghost count if this ghost was visible
