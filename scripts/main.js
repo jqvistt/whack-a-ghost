@@ -7,27 +7,29 @@ let customCursor;
 
 //SCOREBOARD ELEMENT REFERENCES
 let timeLabel;
+let scoreLabel;
 let highScoreLabel;
 
 
-const gameDuration = 60; // Game duration in seconds, updates in html automatically.
+let gameDuration = 10; // Game duration in seconds, updates in html automatically.
 let score = 0;
 let highScore = 0
 
-let ghostsVisible = 0;
+let molesVisible = 0; // includes both ghosts and skeletons.
 
 let isGameOver = false;
 let gameTimerInterval; 
 
-let activeGhosts = []; // used for tracking active instances of class Ghost
-const maximumGhostsVisible = 3;
+let activeGhosts = []; // used for tracking active instances of ghost class
+let activeSkeletons = [];
+
+const maximumMolesVisible = 3;
 
 const backgroundMusic = new Audio('./media/background_music.mp3');
 backgroundMusic.loop = true;
 
 let musicVolume = 0.5; 
 let sfxVolume = 0.7;   
-
 
 const activeSFX = new Set();
 
@@ -37,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
     gameBoard = document.getElementById('game-board');
     holes = document.getElementsByClassName('hole');
 
+    scoreLabel = document.getElementById('score-label');
     timeLabel = document.querySelector('#time-label');
     timeLabel.textContent = `Time: ${gameDuration}s`; /* set to match the variable gameDuration! */
     highScoreLabel = document.querySelector('#high-score-label');
@@ -171,7 +174,7 @@ function playBonkSound() {
     });
 }
 
-function playGhostSound() {
+function playGhostHurtSound() {
     const ghostAudio = new Audio('./media/ghostHurt.wav');
     ghostAudio.volume = sfxVolume;
     activeSFX.add(ghostAudio);
@@ -182,6 +185,20 @@ function playGhostSound() {
         });
     }).catch(error => {
         activeSFX.delete(ghostAudio);
+    });
+}
+
+function playSkeletonHurtSound() {
+    const skeletonAudio = new Audio('./media/skeletonHurt.wav');
+    skeletonAudio.volume = sfxVolume;
+    activeSFX.add(skeletonAudio);
+    
+    skeletonAudio.play().then(() => {
+        skeletonAudio.addEventListener('ended', () => {
+            activeSFX.delete(skeletonAudio);
+        });
+    }).catch(error => {
+        activeSFX.delete(skeletonAudio);
     });
 }
 
@@ -305,11 +322,13 @@ function initHighScore(){
 function updateHighScore(newScore){
 
     if(newScore < highScore) return; // skip this if new score is less than the current high score.
+    
 
     highScore = newScore;
     highScoreLabel.textContent = `High-Score: ${highScore}`;
     localStorage.setItem("highScore", highScore);
-
+    
+    flashTextElement(highScoreLabel, "green", "long");
 }
 
 
@@ -402,8 +421,9 @@ function gameLoop(difficulty) {
 
     isGameOver = false;
     score = 0;
-    ghostsVisible = 0;
-    document.getElementById('score-label').textContent = `Score: ${score}`;
+    molesVisible = 0;
+
+    scoreLabel.textContent = `Score: ${score}`;
     
     startCountDown(3).then(() => {
         startGameTimer().then(() => {
@@ -412,23 +432,46 @@ function gameLoop(difficulty) {
             playGameOverSound();
         });
 
-        spawnGhosts();
+        spawnMoles();
 
         document.addEventListener('ghostHit', handleGhostHit);
+        document.addEventListener('skeletonHit', handleSkeletonHit);
 
     });  
 }
 
+function flashTextElement(element, color, duration){
+
+    element.classList.remove("text-flash-red-short", "text-flash-green-short"); //removes any and all related classes from element
+    void element.offsetWidth; // forces reflow of animation
+    element.classList.add(`text-flash-${color}-${duration}`) // nice :D
+
+}
+
 function handleGhostHit(){
-
     if (!isGameOver) {
+        score--;
+        gameDuration = gameDuration - 10;
+        scoreLabel.textContent = `Score: ${score}`;
 
-        score++;
-        document.getElementById('score-label').textContent = `Score: ${score}`;
-        console.log("Score:", score);
-    
+        flashTextElement(scoreLabel, "red", "short");
+        
     }
+    console.log("Score:", score);
+}
     
+
+
+function handleSkeletonHit(){
+    if (!isGameOver) {
+        gameDuration = gameDuration + 5;
+        score++;
+        scoreLabel.textContent = `Score: ${score}`;
+
+        flashTextElement(scoreLabel, "green", "short");
+    }
+
+    console.log("Score:", score);
 }
 
 function endGame() {
@@ -483,10 +526,10 @@ function resetGame() {
         countdownTimer.remove();
     }
     
-    cleanUpGhosts();
+    cleanUpMoles();
     
     score = 0;
-    ghostsVisible = 0;
+    molesVisible = 0;
     isGameOver = false;
     difficulty = null; 
     
@@ -494,38 +537,55 @@ function resetGame() {
         clearInterval(gameTimerInterval);
     }
     
-    document.getElementById('score-label').textContent = `Score: ${score}`;
+    scoreLabel.textContent = `Score: ${score}`;
     document.getElementById('time-label').textContent = `Time: ${gameDuration}s`;
     
     difficultyPanel.style.visibility = 'visible';
 }
 
-function cleanUpGhosts(){
+function cleanUpMoles(){
 
-    activeGhosts.forEach(ghost => {
+    if(activeGhosts != []){
+
+        activeGhosts.forEach(ghost => {
         console.log("active ghosts: ", activeGhosts);
         ghost.destroy(); // destroy all active ghosts
         console.log("active ghosts, post-destroy: ", activeGhosts);
 
+        activeGhosts = []; //empty the array
+
     });
 
+    }
+    
 
-    activeGhosts = []; //empty the array
+    if( activeSkeletons != []){
+
+        activeSkeletons.forEach(skeleton => {
+        skeleton.destroy();
+    });
+
+    activeSkeletons = [];
+
+    }
 
 }
 
-function spawnGhosts() {
+function spawnMoles() {
 
-    cleanUpGhosts();
+    cleanUpMoles();
 
     for (let i = 0; i < holes.length; i++) {
         const hole = holes[i];
         const ghost = new Ghost(hole);
+        const skeleton = new Skeleton(hole);
         activeGhosts.push(ghost); // store new ghost in array
+        activeSkeletons.push(skeleton);
     }
 }
 
-const hitEvent = new CustomEvent('ghostHit', {});
+const ghostHitEvent = new CustomEvent('ghostHit', {});
+const skeletonHitEvent = new CustomEvent('skeletonHit', {});
 
 class Ghost {
     constructor(hole) {
@@ -548,7 +608,7 @@ class Ghost {
         this.ghostWrapper.addEventListener('mousedown', () => {
             if (!isGameOver && (this.state === "idle" || this.state === "appearing")) {
                 this.setState("hit");
-                document.dispatchEvent(hitEvent);
+                document.dispatchEvent(ghostHitEvent);
             }
         });
 
@@ -583,11 +643,13 @@ class Ghost {
                 break;
                 
             case "appearing":
-                if (!isGameOver && ghostsVisible < maximumGhostsVisible) {
-                    ghostsVisible++;
+                if (!isGameOver && molesVisible < maximumMolesVisible && !this.hole.classList.contains('occupied')) {
+                    molesVisible++;
                     this.isVisible = true;
                     playSwooshSound();
-                    console.log("Ghost appeared. Total visible:", ghostsVisible);
+                    this.hole.classList.add('occupied');
+
+                    console.log("Ghost appeared. Total visible:", molesVisible);
 
                     this.ghostElement.style.backgroundImage = "url('./media/ghost_appear.png')";
                     this.ghostElement.style.display = "block";
@@ -613,7 +675,7 @@ class Ghost {
                 
             case "hit":
                 playBonkSound();
-                playGhostSound();
+                playGhostHurtSound();
                 this.ghostElement.style.backgroundImage = "url('./media/ghost_hit.png')";
                 this.ghostElement.style.pointerEvents = "none";
                 void this.ghostWrapper.offsetWidth;
@@ -627,14 +689,14 @@ class Ghost {
                 
             case "disappearing":
                 if (this.isVisible) {
-                    ghostsVisible--;
+                    molesVisible--;
                     this.isVisible = false;
-                    console.log("Ghost disappeared. Total visible:", ghostsVisible);
                 }
                 
                 playSwooshSound();
                 this.ghostWrapper.classList.add("floatDown");
-                
+                this.hole.classList.remove('occupied');
+
                 const disappearTimeout = setTimeout(() => {
                     this.setState("hidden");
                 }, 500);
@@ -654,7 +716,7 @@ class Ghost {
             return;
         }
         
-        if (ghostsVisible >= maximumGhostsVisible) {
+        if (molesVisible >= maximumMolesVisible) {
             const timeout = setTimeout(() => this.appearRandomly(maxDelaySeconds), 1000);
             this.timeouts.push(timeout);
             return;
@@ -662,7 +724,7 @@ class Ghost {
         
         const randomDelay = Math.random() * maxDelaySeconds * 1000;
         const timeout = setTimeout(() => {
-            if (!isGameOver && this.state === "hidden" && ghostsVisible < maximumGhostsVisible) {
+            if (!isGameOver && this.state === "hidden" && molesVisible < maximumMolesVisible) {
                 this.setState("appearing");
             } else if (!isGameOver) {
                 this.appearRandomly(2);
@@ -697,8 +759,8 @@ class Ghost {
         
         // 4. Update ghost count if this ghost was visible
         if (this.isVisible) {
-            ghostsVisible--;
-            console.log("Ghost destroyed. Total visible:", ghostsVisible);
+            molesVisible--;
+            console.log("Ghost destroyed. Total visible:", molesVisible);
         }
         
         // 5. Nullify references to help garbage collection
@@ -711,6 +773,204 @@ class Ghost {
         this.state = "destroyed";
     }
 }
+
+class Skeleton {
+    constructor(hole) {
+        this.hole = hole;
+        this.state = "hidden";
+        this.isVisible = false;
+        this.timeouts = []; //track timeouts for cleaning up after game
+
+
+        //skeletonCanvashides the skeleton unless its inside the canvas area. This makes the skeleton appear to go INTO the hole and not just through it.
+        this.skeletonCanvas = document.createElement("div");
+        this.skeletonCanvas.className = "skeleton-canvas";
+
+        this.skeletonWrapper = document.createElement("div");
+        this.skeletonWrapper.className = "skeleton-wrapper";
+
+        this.skeletonElement = document.createElement("div");
+        this.skeletonElement.className = "skeleton";
+
+        this.skeletonWrapper.addEventListener('mousedown', () => {
+            if (!isGameOver && (this.state === "idle" || this.state === "appearing")) {
+                this.setState("hit");
+                document.dispatchEvent(skeletonHitEvent);
+            }
+        });
+
+        this.skeletonCanvas.appendChild(this.skeletonWrapper);
+        this.skeletonWrapper.appendChild(this.skeletonElement);
+        hole.appendChild(this.skeletonCanvas);
+        
+        this.appearRandomly(3);
+    }
+
+    cleanup() { //cleans up and removes unused timeouts
+        this.timeouts.forEach(timeout => clearTimeout(timeout));
+        this.timeouts = [];
+    }
+
+    updateState() {
+        if (isGameOver && this.state !== "hit") {
+            return;
+        }
+        
+        this.skeletonWrapper.classList.remove("shake-horizontal", "floatUp", "floatDown");
+        
+        switch (this.state) {
+            case "hidden":
+                this.skeletonElement.style.display = "none";
+                this.skeletonElement.style.pointerEvents = "none";
+                this.isVisible = false;
+                
+                
+                if (!isGameOver) {
+                    this.appearRandomly(15);
+                }
+                break;
+                
+            case "appearing":
+                if (!isGameOver && molesVisible < maximumMolesVisible && !this.hole.classList.contains('occupied')) {
+                    molesVisible++;
+                    this.isVisible = true;
+                    playSwooshSound();
+                    this.hole.classList.add('occupied');
+
+                    console.log("Skeleton appeared. Total visible:", molesVisible);
+
+                    this.skeletonElement.style.backgroundImage = "url('./media/skeleton_appear.png')";
+                    this.skeletonElement.style.display = "block";
+                    this.skeletonElement.style.pointerEvents = "all";
+                    this.skeletonWrapper.classList.add("floatUp");
+
+                    const timeout = setTimeout(() => {
+                        this.setState("idle");
+                    }, 500);
+                    this.timeouts.push(timeout); //add timeout to array
+                } else {
+                    this.setState("hidden");
+                }
+                break;
+                
+            case "idle":
+                this.skeletonElement.style.backgroundImage = "url('./media/skeleton_idle.gif')";
+                this.skeletonElement.style.backgroundSize = "cover";
+                if (!isGameOver) {
+                    this.disappearRandomlyAfterMaxSeconds(5);
+                }
+                break;
+                
+            case "hit":
+                playBonkSound();
+                playSkeletonHurtSound();
+                
+                // Add cache-busting parameter to force reload of gif, to play the one-shot animation again
+                // Basically takes the current time and adds it to the url, which makes the browser think its a "new" file,
+                // and therefore plays the animation again... 
+                // New concept to me, a tad worried about possible performance loss due to this method.
+                // gif anim can easily be swapped out for a css animation too...
+
+                const timestamp = new Date().getTime();
+                this.skeletonElement.style.backgroundImage = `url('./media/skeleton_hit.gif?${timestamp}')`;
+                
+                this.skeletonElement.style.pointerEvents = "none";
+                void this.skeletonWrapper.offsetWidth;
+                this.skeletonWrapper.classList.add("shake-horizontal");
+                
+                const hitTimeout = setTimeout(() => {
+                    this.setState("disappearing");
+                }, 500);
+                this.timeouts.push(hitTimeout);
+                break;
+                
+            case "disappearing":
+                if (this.isVisible) {
+                    molesVisible--;
+                    this.isVisible = false;
+                }
+                
+                playSwooshSound();
+                this.skeletonWrapper.classList.add("floatDown");
+                this.hole.classList.remove('occupied');
+                
+                const disappearTimeout = setTimeout(() => {
+                    this.setState("hidden");
+                }, 500);
+                this.timeouts.push(disappearTimeout); //add timeout to array
+                break;
+        }
+    }
+
+    setState(newState) {
+        this.state = newState;
+        this.updateState();
+    }
+
+    appearRandomly(maxDelaySeconds) {
+
+        if (isGameOver || this.state !== "hidden") {
+            return;
+        }
+        
+        if (molesVisible >= maximumMolesVisible) {
+            const timeout = setTimeout(() => this.appearRandomly(maxDelaySeconds), 1000);
+            this.timeouts.push(timeout);
+            return;
+        }
+        
+        const randomDelay = Math.random() * maxDelaySeconds * 1000;
+        const timeout = setTimeout(() => {
+            if (!isGameOver && this.state === "hidden" && molesVisible < maximumMolesVisible) {
+                this.setState("appearing");
+            } else if (!isGameOver) {
+                this.appearRandomly(2);
+            }
+        }, randomDelay);
+        this.timeouts.push(timeout);
+    }
+
+    disappearRandomlyAfterMaxSeconds(seconds) {
+        const timeout = setTimeout(() => {
+            if (!isGameOver && this.state === "idle") {
+                this.setState("disappearing");
+            }
+        }, (Math.random() * calculateDissapearDiff() * 1000));
+        this.timeouts.push(timeout);
+    }
+    
+    //AI GENERATED DESTROY!!
+    destroy() {
+        // 1. Clear all timeouts
+        this.cleanup();
+        
+        // 2. Remove event listeners
+        if (this.skeletonWrapper) {
+            this.skeletonWrapper.removeEventListener('mousedown', this.handleMouseDown);
+        }
+        
+        // 3. Remove DOM elements
+        if (this.skeletonCanvas && this.skeletonCanvas.parentNode) {
+            this.skeletonCanvas.parentNode.removeChild(this.skeletonCanvas);
+        }
+        
+        // 4. Update skeleton count if this skeleton was visible
+        if (this.isVisible) {
+            molesVisible--;
+            console.log("Skeleton destroyed. Total visible:", molesVisible);
+        }
+        
+        // 5. Nullify references to help garbage collection
+        this.hole = null;
+        this.skeletonWrapper = null;
+        this.skeletonElement = null;
+        this.handleMouseDown = null;
+        
+        // 6. Set state to indicate destruction
+        this.state = "destroyed";
+    }
+}
+
 
 function calculateDissapearDiff(){
 
